@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"reflect"
+	"sort"
 )
 
 func TestExtractParametersFromText(t *testing.T) {
@@ -90,6 +91,9 @@ func TestParseParametersFromTextIntoMapSecureAllowed(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
+
+	sort.Slice(expectedList, func(i, j int) bool { return expectedList[i] < expectedList[j] })
+	sort.Slice(list, func(i, j int) bool { return list[i] < list[j] })
 	assert.True(t, reflect.DeepEqual(list, expectedList))
 }
 
