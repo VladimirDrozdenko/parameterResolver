@@ -61,6 +61,22 @@ func UsageForResolveParametersInText(service resolver.ISsmParameterService) {
 	fmt.Printf("Resolved doc:   %s\n\n", resolvedText)
 }
 
+func UsageForResolveParametersInFile(service resolver.ISsmParameterService) {
+	fmt.Println("Example of ResolveParametersInFile API usage")
+
+	inputFilename := "./test.json"
+	outputFilename := "./resolved_test.json"
+	err := resolver.ResolveParametersInFile(service, inputFilename, outputFilename, resolver.ResolveOptions{
+		ResolveSecureParameters:true,
+	})
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	fmt.Println("Check content of the output file: " + outputFilename)
+}
+
 //
 // Preconditions: the following two parameters are provisioned in your AWS account
 // 		/a/b/c/param1 is of String type
@@ -82,5 +98,6 @@ func main() {
 	UsageForResolveParameterReferenceList(service)
 
 	UsageForResolveParametersInText(service)
-	
+
+	UsageForResolveParametersInFile(service)
 }
