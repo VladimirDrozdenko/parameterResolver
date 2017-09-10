@@ -17,8 +17,7 @@ func UsageForExtractParametersFromTextApi(service resolver.ISsmParameterService)
 	}
 
 	for ref, param := range resolvedParameters {
-		fmt.Printf("-- For reference %s\n %s\n\n", ref, param)
-		fmt.Println()
+		fmt.Printf("Parameter reference {{%s}} -> %s\n", ref, param)
 	}
 }
 
