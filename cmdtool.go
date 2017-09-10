@@ -3,7 +3,7 @@ package main
 //import (
 //	"log"
 //	"time"
-//	"parameterResolver/resolver"
+//	"github.com/parameterResolver/resolver"
 //	"flag"
 //)
 

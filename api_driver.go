@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"parameterResolver/resolver"
+	"github.com/parameterResolver/resolver"
 )
 
 func UsageForExtractParametersFromTextApi(service resolver.ISsmParameterService) {

@@ -75,7 +75,7 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedWithPaging(t *testing.
 	parametersList := []string {}
 	expectedValues := map[string]SsmParameterInfo {}
 
-	for i := 0; i < maxParametersRetrievedFromSsm * 2; i++ {
+	for i := 0; i < maxParametersRetrievedFromSsm / 5; i++ {
 		name := "name_" + strconv.Itoa(i)
 		key := ssmSecurePrefix + name
 		parametersList = append(parametersList, key)
@@ -83,7 +83,7 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedWithPaging(t *testing.
 		expectedValues[key] = SsmParameterInfo {
 			Name: name,
 			Value: "value_" + name,
-			Type: "String",
+			Type: secureStringType,
 		}
 	}
 
