@@ -1,0 +1,4 @@
+{
+  "param1" : "{{ssm:A}}",
+  "secure-parameter-1" : "{{ ssm-secure:secure-param-1}}"
+}
