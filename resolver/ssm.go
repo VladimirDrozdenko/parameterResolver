@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"strings"
-	//	"strconv"
 )
 
 //
@@ -43,8 +42,6 @@ func NewService() (service *Service, err error) {
 		currentSession.Config.Region = aws.String(region)
 	}
 
-	//log.Printf("Region: %s\n", *currentSession.Config.Region)
-
 	var client *ssm.SSM
 	if arn := os.Getenv("SSM2ENV_ASSUME_ROLE_ARN"); arn != "" {
 		credentials := stscreds.NewCredentials(currentSession, arn)
@@ -64,8 +61,6 @@ func NewService() (service *Service, err error) {
 // This function takes a list of at most maxParametersRetrievedFromSsm(=10) ssm parameter name references like (ssm:name).
 // It returns a map<param-ref, SsmParameterInfo>.
 func (s *Service) callGetParameters(parameterReferences []string) (map[string]SsmParameterInfo, error) {
-
-	//log.Println("Making a call to SSM Parameters Store to fetch " + strconv.Itoa(len(parameterReferences)) + " parameter(s)")
 
 	ref2NameMapper := make(map[string]string)
 

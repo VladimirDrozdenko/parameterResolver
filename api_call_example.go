@@ -110,5 +110,5 @@ func main() {
 
 	UsageForResolveParametersInText(service)
 
-	//UsageForResolveParametersInFile(service)
+	UsageForResolveParametersInFile(service)
 }
