@@ -1,11 +1,11 @@
 package resolver
 
 import (
-	"testing"
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"strconv"
-	"errors"
+	"testing"
 )
 
 type ServiceMockedObjectWithRecords struct {
@@ -14,8 +14,8 @@ type ServiceMockedObjectWithRecords struct {
 }
 
 func NewServiceMockedObjectWithExtraRecords(
-		records map[string]SsmParameterInfo) ServiceMockedObjectWithRecords {
-	return ServiceMockedObjectWithRecords {
+	records map[string]SsmParameterInfo) ServiceMockedObjectWithRecords {
+	return ServiceMockedObjectWithRecords{
 		records: records,
 	}
 }
@@ -36,20 +36,19 @@ func (m *ServiceMockedObjectWithRecords) callGetParameters(parameterReferences [
 	return parameters, nil
 }
 
-
 func TestGetParametersFromSsmParameterStoreWithAllResolvedNoPaging(t *testing.T) {
-	parametersList := []string {}
-	expectedValues := map[string]SsmParameterInfo {}
+	parametersList := []string{}
+	expectedValues := map[string]SsmParameterInfo{}
 
-	for i := 0; i < maxParametersRetrievedFromSsm / 2; i++ {
+	for i := 0; i < maxParametersRetrievedFromSsm/2; i++ {
 		name := "name_" + strconv.Itoa(i)
 		key := ssmNonSecurePrefix + name
 		parametersList = append(parametersList, key)
 
-		expectedValues[key] = SsmParameterInfo {
-			Name: name,
+		expectedValues[key] = SsmParameterInfo{
+			Name:  name,
 			Value: "value_" + name,
-			Type: "String",
+			Type:  "String",
 		}
 	}
 
@@ -61,20 +60,19 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedNoPaging(t *testing.T)
 	assert.True(t, reflect.DeepEqual(expectedValues, retrievedValues))
 }
 
-
 func TestGetParametersFromSsmParameterStoreWithAllResolvedWithPaging(t *testing.T) {
-	parametersList := []string {}
-	expectedValues := map[string]SsmParameterInfo {}
+	parametersList := []string{}
+	expectedValues := map[string]SsmParameterInfo{}
 
-	for i := 0; i < maxParametersRetrievedFromSsm / 5; i++ {
+	for i := 0; i < maxParametersRetrievedFromSsm/5; i++ {
 		name := "name_" + strconv.Itoa(i)
 		key := ssmSecurePrefix + name
 		parametersList = append(parametersList, key)
 
-		expectedValues[key] = SsmParameterInfo {
-			Name: name,
+		expectedValues[key] = SsmParameterInfo{
+			Name:  name,
 			Value: "value_" + name,
-			Type: secureStringType,
+			Type:  secureStringType,
 		}
 	}
 
@@ -86,9 +84,8 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedWithPaging(t *testing.
 	assert.True(t, reflect.DeepEqual(expectedValues, retrievedValues))
 }
 
-
 func TestGetParametersFromSsmParameterStoreWithUnresolvedIgnoreNoPaging(t *testing.T) {
-	parametersList := []string {}
+	parametersList := []string{}
 	for i := 0; i < 2; i++ {
 		key := "{{ssm:name_" + strconv.Itoa(i) + "}}"
 		parametersList = append(parametersList, key)

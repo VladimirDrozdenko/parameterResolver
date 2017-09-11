@@ -1,6 +1,5 @@
 package resolver
 
-
 type formatEncoder interface {
 	encode(value string) string
 }
@@ -32,7 +31,6 @@ type ymlEncoder struct {
 func (e ymlEncoder) encode(value string) string {
 	return value
 }
-
 
 func NewFormatEncoder(encoding string) formatEncoder {
 	switch encoding {

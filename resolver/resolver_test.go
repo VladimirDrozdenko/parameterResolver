@@ -1,14 +1,14 @@
 package resolver
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"sort"
+	"testing"
 )
 
 func TestExtractParametersFromText(t *testing.T) {
-	expectedResult := map[string]SsmParameterInfo {
+	expectedResult := map[string]SsmParameterInfo{
 		"ssm:/a/b/c/param1": {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
 		"ssm-secure:param2": {Name: "param2", Type: secureStringType, Value: "value_param2"},
 	}
@@ -25,10 +25,10 @@ func TestExtractParametersFromText(t *testing.T) {
 }
 
 func TestExtractParametersFromTextIgnoreSecureParams(t *testing.T) {
-	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo {
-		"ssm:/a/b/c/param1": {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
+	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo{
+		"ssm:/a/b/c/param1":        {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
 		"ssm-secure:/a/b/c/param1": {Name: "param2", Type: secureStringType, Value: "value_/a/b/c/param1"},
-		"ssm-secure:param2": {Name: "param2", Type: secureStringType, Value: "value_param2"},
+		"ssm-secure:param2":        {Name: "param2", Type: secureStringType, Value: "value_param2"},
 	})
 
 	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}} - {{ ssm-secure:/a/b/c/param1}}."
@@ -36,7 +36,7 @@ func TestExtractParametersFromTextIgnoreSecureParams(t *testing.T) {
 		IgnoreSecureParameters: true,
 	})
 
-	expectedResult := map[string]SsmParameterInfo {
+	expectedResult := map[string]SsmParameterInfo{
 		"ssm:/a/b/c/param1": {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
 	}
 
@@ -46,9 +46,9 @@ func TestExtractParametersFromTextIgnoreSecureParams(t *testing.T) {
 }
 
 func TestExtractParametersFromTextWrongPrefix(t *testing.T) {
-	expectedResult := map[string]SsmParameterInfo {
+	expectedResult := map[string]SsmParameterInfo{
 		"ssm:/a/b/c/param1": {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
-		"ssm:param2": {Name: "param2", Type: secureStringType, Value: "value_param2"}, // wrong prefix
+		"ssm:param2":        {Name: "param2", Type: secureStringType, Value: "value_param2"}, // wrong prefix
 	}
 
 	serviceObject := NewServiceMockedObjectWithExtraRecords(expectedResult)
@@ -62,15 +62,15 @@ func TestExtractParametersFromTextWrongPrefix(t *testing.T) {
 }
 
 func TestResolveParameterReferenceList(t *testing.T) {
-	expectedResult := map[string]SsmParameterInfo {
-		"ssm:param1": {Name: "param1", Type: stringType, Value: "value_param1"},
-		"ssm:param2": {Name: "param2", Type: stringType, Value: "value_param2"},
+	expectedResult := map[string]SsmParameterInfo{
+		"ssm:param1":             {Name: "param1", Type: stringType, Value: "value_param1"},
+		"ssm:param2":             {Name: "param2", Type: stringType, Value: "value_param2"},
 		"ssm-secure:/a/b/param1": {Name: "/a/b/param1", Type: secureStringType, Value: "value_/a/b/param1"},
-		"ssm-secure:param4": {Name: "param4", Type: secureStringType, Value: "value_param4"},
+		"ssm-secure:param4":      {Name: "param4", Type: secureStringType, Value: "value_param4"},
 	}
 	serviceObject := NewServiceMockedObjectWithExtraRecords(expectedResult)
 
-	parameterReferences := []string {
+	parameterReferences := []string{
 		"ssm:param1",
 		"ssm:param2",
 		"ssm-secure:/a/b/param1",
@@ -87,14 +87,14 @@ func TestResolveParameterReferenceList(t *testing.T) {
 }
 
 func TestResolveParameterReferenceListIgnoreSecureParams(t *testing.T) {
-	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo {
-		"ssm:param1": {Name: "param1", Type: stringType, Value: "value_param1"},
-		"ssm:param2": {Name: "param2", Type: stringType, Value: "value_param2"},
+	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo{
+		"ssm:param1":             {Name: "param1", Type: stringType, Value: "value_param1"},
+		"ssm:param2":             {Name: "param2", Type: stringType, Value: "value_param2"},
 		"ssm-secure:/a/b/param1": {Name: "/a/b/param1", Type: secureStringType, Value: "value_/a/b/param1"},
-		"ssm-secure:param4": {Name: "param4", Type: secureStringType, Value: "value_param4"},
+		"ssm-secure:param4":      {Name: "param4", Type: secureStringType, Value: "value_param4"},
 	})
 
-	parameterReferences := []string {
+	parameterReferences := []string{
 		"ssm:param1",
 		"ssm:param2",
 		"ssm-secure:/a/b/param1",
@@ -105,7 +105,7 @@ func TestResolveParameterReferenceListIgnoreSecureParams(t *testing.T) {
 		IgnoreSecureParameters: true,
 	})
 
-	expectedResult := map[string]SsmParameterInfo {
+	expectedResult := map[string]SsmParameterInfo{
 		"ssm:param1": {Name: "param1", Type: stringType, Value: "value_param1"},
 		"ssm:param2": {Name: "param2", Type: stringType, Value: "value_param2"},
 	}
@@ -117,7 +117,7 @@ func TestResolveParameterReferenceListIgnoreSecureParams(t *testing.T) {
 
 func TestParseParametersFromTextIntoMapSecureAllowed(t *testing.T) {
 	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}, {{ ssm-secure:/a/b/c/param1  }}."
-	expectedList := []string {"ssm:/a/b/c/param1", "ssm-secure:param2", "ssm-secure:/a/b/c/param1"}
+	expectedList := []string{"ssm:/a/b/c/param1", "ssm-secure:param2", "ssm-secure:/a/b/c/param1"}
 
 	list, err := parseParametersFromTextIntoMap(text)
 
@@ -130,7 +130,7 @@ func TestParseParametersFromTextIntoMapSecureAllowed(t *testing.T) {
 }
 
 func TestResolveParametersInText(t *testing.T) {
-	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo {
+	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo{
 		"ssm:/a/b/c/param1": {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
 		"ssm-secure:param2": {Name: "param2", Type: secureStringType, Value: "value_param2"},
 	})
@@ -148,7 +148,7 @@ func TestResolveParametersInText(t *testing.T) {
 }
 
 func TestResolveParametersInTextIgnoreSecureParams(t *testing.T) {
-	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo {
+	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo{
 		"ssm:/a/b/c/param1": {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
 		"ssm-secure:param2": {Name: "param2", Type: secureStringType, Value: "value_param2"},
 	})

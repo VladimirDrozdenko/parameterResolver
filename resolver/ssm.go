@@ -4,20 +4,19 @@ import (
 	"log"
 	"os"
 
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	"errors"
 	"strings"
-//	"strconv"
+	//	"strconv"
 )
 
 //
 // Maximum number of parameters that can be requested from SSM Parameter store in one GetParameters request
 const maxParametersRetrievedFromSsm = 10
-
 
 type ISsmParameterService interface {
 	callGetParameters(parameterReferences []string) (map[string]SsmParameterInfo, error)
@@ -54,7 +53,7 @@ func NewService() (service *Service, err error) {
 		client = ssm.New(currentSession)
 	}
 
-	service = &Service {
+	service = &Service{
 		SSMClient: client,
 	}
 
@@ -95,9 +94,9 @@ func (s *Service) callGetParameters(parameterReferences []string) (map[string]Ss
 	resolvedParametersMap := map[string]SsmParameterInfo{}
 	for i := 0; i < len(parametersOutput.Parameters); i++ {
 		param := parametersOutput.Parameters[i]
-		resolvedParametersMap[ref2NameMapper[*param.Name]] = SsmParameterInfo {
-			Name: *param.Name,
-			Type: *param.Type,
+		resolvedParametersMap[ref2NameMapper[*param.Name]] = SsmParameterInfo{
+			Name:  *param.Name,
+			Type:  *param.Type,
 			Value: *param.Value,
 		}
 	}
@@ -140,5 +139,5 @@ func getParametersFromSsmParameterStore(s ISsmParameterService, parametersToFetc
 }
 
 func extractParameterNameFromReference(parameterReference string) string {
-	return parameterReference[strings.Index(parameterReference, ":") + 1 :]
+	return parameterReference[strings.Index(parameterReference, ":")+1:]
 }

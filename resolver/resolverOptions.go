@@ -10,5 +10,5 @@ const JsonOutputFormat = "json"
 
 type ResolveOptions struct {
 	IgnoreSecureParameters bool
-	ValueEncoding string
+	ValueEncoding          string
 }

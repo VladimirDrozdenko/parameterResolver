@@ -1,15 +1,14 @@
 package resolver
 
 import (
-	"os"
 	"errors"
 	"io/ioutil"
+	"os"
 )
 
 //
 // Maximum file size in bytes
 const MaxFileSizeInBytes = 1024 * 1024 * 1024
-
 
 // checks if file is less than MaxFileSizeInBytes and returns error if it is not
 func validateFileAndSize(source string) error {

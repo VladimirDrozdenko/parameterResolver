@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"github.com/parameterResolver/resolver"
+	"log"
 )
 
 func UsageForExtractParametersFromTextApi(service resolver.ISsmParameterService) {
@@ -11,7 +11,7 @@ func UsageForExtractParametersFromTextApi(service resolver.ISsmParameterService)
 
 	inputDoc := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}"
 	resolvedParameters, err := resolver.ExtractParametersFromText(service, inputDoc, resolver.ResolveOptions{
-		IgnoreSecureParameters:false,
+		IgnoreSecureParameters: false,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -27,13 +27,13 @@ func UsageForExtractParametersFromTextApi(service resolver.ISsmParameterService)
 func UsageForResolveParameterReferenceList(service resolver.ISsmParameterService) {
 	fmt.Println("Example of ResolveParameterReferenceList API usage")
 
-	parameterReferences := []string {
+	parameterReferences := []string{
 		"ssm:/a/b/c/param1",
 		"ssm-secure:param2",
 	}
 
 	resolvedParameters, err := resolver.ResolveParameterReferenceList(service, parameterReferences, resolver.ResolveOptions{
-		IgnoreSecureParameters:false,
+		IgnoreSecureParameters: false,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +50,7 @@ func UsageForResolveParametersInText(service resolver.ISsmParameterService) {
 
 	unresolvedText := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}"
 	resolvedText, err := resolver.ResolveParametersInText(service, unresolvedText, resolver.ResolveOptions{
-		IgnoreSecureParameters:false,
+		IgnoreSecureParameters: false,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -67,7 +67,7 @@ func UsageForResolveParametersInFile(service resolver.ISsmParameterService) {
 	inputFilename := "./test-files/test.json"
 	outputFilenameWithSecureStrings := "./resolved_secure_output.json"
 	err1 := resolver.ResolveParametersInFile(service, inputFilename, outputFilenameWithSecureStrings, resolver.ResolveOptions{
-		IgnoreSecureParameters:false,
+		IgnoreSecureParameters: false,
 	})
 	if err1 != nil {
 		log.Fatal(err1)
@@ -78,7 +78,7 @@ func UsageForResolveParametersInFile(service resolver.ISsmParameterService) {
 
 	outputFilenameIgnoredSecureStrings := "./resolved_no_secure_output.json"
 	err2 := resolver.ResolveParametersInFile(service, inputFilename, outputFilenameIgnoredSecureStrings, resolver.ResolveOptions{
-		IgnoreSecureParameters:true,
+		IgnoreSecureParameters: true,
 	})
 	if err2 != nil {
 		log.Fatal(err2)
@@ -110,6 +110,5 @@ func main() {
 
 	UsageForResolveParametersInText(service)
 
-	UsageForResolveParametersInFile(service)
+	//UsageForResolveParametersInFile(service)
 }
-

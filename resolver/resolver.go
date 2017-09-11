@@ -2,18 +2,17 @@ package resolver
 
 import (
 	"errors"
-	"strings"
 	"regexp"
+	"strings"
 )
-
 
 //
 // Takes text document and resolves all parameters in it according to ResolveOptions.
 // It will return a map of (parameter reference) to SsmParameterInfo.
 func ExtractParametersFromText(
-		service ISsmParameterService,
-		input string,
-		options ResolveOptions) (map[string]SsmParameterInfo, error) {
+	service ISsmParameterService,
+	input string,
+	options ResolveOptions) (map[string]SsmParameterInfo, error) {
 
 	uniqueParameterReferences, err := parseParametersFromTextIntoMap(input)
 	if err != nil {
@@ -43,14 +42,13 @@ func ExtractParametersFromText(
 	return parametersWithValues, nil
 }
 
-
 //
 // Takes a list of references to SSM parameters, resolves them according to ResolveOptions and
 // returns a map of (parameter reference) to SsmParameterInfo.
 func ResolveParameterReferenceList(
-		service ISsmParameterService,
-		parameterReferences []string,
-		options ResolveOptions) (map[string]SsmParameterInfo, error) {
+	service ISsmParameterService,
+	parameterReferences []string,
+	options ResolveOptions) (map[string]SsmParameterInfo, error) {
 
 	uniqueParameterReferences := dedupSlice(parameterReferences)
 	parametersWithValues, err := getParametersFromSsmParameterStore(service, uniqueParameterReferences)
@@ -76,14 +74,13 @@ func ResolveParameterReferenceList(
 	return parametersWithValues, nil
 }
 
-
 //
 // Takes text document, resolves all parameters in it according to ResolveOptions
 // and returns resolved document.
 func ResolveParametersInText(
-		service ISsmParameterService,
-		input string,
-		options ResolveOptions) (string, error) {
+	service ISsmParameterService,
+	input string,
+	options ResolveOptions) (string, error) {
 
 	resolvedParametersMap, err := ExtractParametersFromText(service, input, options)
 	if err != nil || resolvedParametersMap == nil || len(resolvedParametersMap) == 0 {
@@ -98,15 +95,14 @@ func ResolveParametersInText(
 	return input, nil
 }
 
-
 //
 // Reads inputFileName, resolves SSM parameters in it according to ResolveOptions and
 // stores resolved document in the outputFileName file.
 func ResolveParametersInFile(
-		service ISsmParameterService,
-		inputFileName string,
-		outputFileName string,
-		options ResolveOptions) error {
+	service ISsmParameterService,
+	inputFileName string,
+	outputFileName string,
+	options ResolveOptions) error {
 
 	if len(inputFileName) == 0 {
 		return errors.New("input file name is not provided")
@@ -146,7 +142,7 @@ func ResolveParametersInFile(
 
 func validateParameterReferencePrefix(resolvedParametersMap *map[string]SsmParameterInfo) error {
 	for key, value := range *resolvedParametersMap {
-		if  strings.HasPrefix(key, ssmSecurePrefix) && value.Type != secureStringType {
+		if strings.HasPrefix(key, ssmSecurePrefix) && value.Type != secureStringType {
 			return errors.New("secure prefix " + ssmSecurePrefix + " is used for a non-secure type " + value.Type)
 		}
 
@@ -162,15 +158,15 @@ func encodeResolvedValues(resolvedParametersMap *map[string]SsmParameterInfo, op
 	formatEncoder := NewFormatEncoder(options.ValueEncoding)
 	for key, _ := range *resolvedParametersMap {
 		(*resolvedParametersMap)[key] = SsmParameterInfo{
-			Name: (*resolvedParametersMap)[key].Name,
-			Type: (*resolvedParametersMap)[key].Type,
+			Name:  (*resolvedParametersMap)[key].Name,
+			Type:  (*resolvedParametersMap)[key].Type,
 			Value: formatEncoder.encode((*resolvedParametersMap)[key].Value),
 		}
 	}
 }
 
 func dedupSlice(slice []string) []string {
-	ht := map[string]bool {}
+	ht := map[string]bool{}
 
 	for _, element := range slice {
 		ht[element] = true
@@ -200,7 +196,7 @@ func parseParametersFromTextIntoMap(text string) ([]string, error) {
 		parameterNamesDeduped[matchedSecurePhrases[i][1]] = true
 	}
 
-	result := []string {}
+	result := []string{}
 	for key, _ := range parameterNamesDeduped {
 		result = append(result, key)
 	}
