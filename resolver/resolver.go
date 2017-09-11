@@ -16,7 +16,7 @@ func ExtractParametersFromText(
 		input string,
 		options ResolveOptions) (map[string]SsmParameterInfo, error) {
 
-	uniqueParameterReferences, err := parseParametersFromTextIntoMap(input, options)
+	uniqueParameterReferences, err := parseParametersFromTextIntoMap(input)
 	if err != nil {
 		return nil, err
 	}
@@ -27,22 +27,17 @@ func ExtractParametersFromText(
 		return nil, err
 	}
 
-	if !options.ResolveSecureParameters {
-
-		invalidParameters := []string {}
+	if options.IgnoreSecureParameters {
 		for key, value := range parametersWithValues {
 			if strings.HasPrefix(key, ssmSecurePrefix) || value.Type == secureStringType {
-				invalidParameters = append(invalidParameters, key)
+				delete(parametersWithValues, key)
 			}
-		}
-
-		if len(invalidParameters) > 0 {
-			return nil, errors.New("resolving secure parameters is not allowed")
 		}
 	}
 
 	return parametersWithValues, nil
 }
+
 
 //
 // Takes a list of references to SSM parameters, resolves them according to ResolveOptions and
@@ -59,22 +54,17 @@ func ResolveParameterReferenceList(
 		return nil, err
 	}
 
-	if !options.ResolveSecureParameters {
-
-		invalidParameters := []string {}
+	if options.IgnoreSecureParameters {
 		for key, value := range parametersWithValues {
 			if strings.HasPrefix(key, ssmSecurePrefix) || value.Type == secureStringType {
-				invalidParameters = append(invalidParameters, key)
+				delete(parametersWithValues, key)
 			}
-		}
-
-		if len(invalidParameters) > 0 {
-			return nil, errors.New("resolving secure parameters is not allowed")
 		}
 	}
 
 	return parametersWithValues, nil
 }
+
 
 //
 // Takes text document, resolves all parameters in it according to ResolveOptions
@@ -162,13 +152,9 @@ func dedupSlice(slice []string) []string {
 	return keys
 }
 
-func parseParametersFromTextIntoMap(text string, options ResolveOptions) ([]string, error) {
+func parseParametersFromTextIntoMap(text string) ([]string, error) {
 	matchedPhrases := parameterPlaceholder.FindAllStringSubmatch(text, -1)
 	matchedSecurePhrases := secureParameterPlaceholder.FindAllStringSubmatch(text, -1)
-
-	if !options.ResolveSecureParameters && len(matchedSecurePhrases) > 0 {
-		return nil, errors.New("resolving secure parameters is not allowed")
-	}
 
 	parameterNamesDeduped := make(map[string]bool)
 	for i := 0; i < len(matchedPhrases); i++ {

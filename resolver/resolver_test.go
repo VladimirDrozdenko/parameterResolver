@@ -12,7 +12,7 @@ func TestExtractParametersFromText(t *testing.T) {
 
 	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}."
 	resolvedParameters, err := ExtractParametersFromText(&serviceObject, text, ResolveOptions{
-		ResolveSecureParameters: true,
+		IgnoreSecureParameters: false,
 	})
 
 	expectedResult := map[string]SsmParameterInfo {
@@ -25,16 +25,21 @@ func TestExtractParametersFromText(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(resolvedParameters, expectedResult))
 }
 
-func TestExtractParametersFromTextNoSecureParams(t *testing.T) {
+func TestExtractParametersFromTextIgnoreSecureParams(t *testing.T) {
 	serviceObject := NewServiceMockedObject(false)
 
 	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}."
 	resolvedParameters, err := ExtractParametersFromText(&serviceObject, text, ResolveOptions{
-		ResolveSecureParameters: false,
+		IgnoreSecureParameters: true,
 	})
 
-	assert.NotNil(t, err)
-	assert.Nil(t, resolvedParameters)
+	expectedResult := map[string]SsmParameterInfo {
+		"ssm:/a/b/c/param1": {Name: "/a/b/c/param1", Type: stringType, Value: "value_/a/b/c/param1"},
+	}
+
+	assert.Nil(t, err)
+	assert.NotNil(t, resolvedParameters)
+	assert.True(t, reflect.DeepEqual(resolvedParameters, expectedResult))
 }
 
 func TestResolveParameterReferenceList(t *testing.T) {
@@ -48,7 +53,7 @@ func TestResolveParameterReferenceList(t *testing.T) {
 	}
 
 	resolvedParameters, err := ResolveParameterReferenceList(&serviceObject, parameterReferences, ResolveOptions{
-		ResolveSecureParameters: true,
+		IgnoreSecureParameters: false,
 	})
 
 	expectedResult := map[string]SsmParameterInfo {
@@ -63,7 +68,7 @@ func TestResolveParameterReferenceList(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(resolvedParameters, expectedResult))
 }
 
-func TestResolveParameterReferenceListNoSecureParams(t *testing.T) {
+func TestResolveParameterReferenceListIgnoreSecureParams(t *testing.T) {
 	serviceObject := NewServiceMockedObject(false)
 
 	parameterReferences := []string {
@@ -74,20 +79,24 @@ func TestResolveParameterReferenceListNoSecureParams(t *testing.T) {
 	}
 
 	resolvedParameters, err := ResolveParameterReferenceList(&serviceObject, parameterReferences, ResolveOptions{
-		ResolveSecureParameters: false,
+		IgnoreSecureParameters: true,
 	})
 
-	assert.NotNil(t, err)
-	assert.Nil(t, resolvedParameters)
+	expectedResult := map[string]SsmParameterInfo {
+		"ssm:param1": {Name: "param1", Type: stringType, Value: "value_param1"},
+		"ssm:param2": {Name: "param2", Type: stringType, Value: "value_param2"},
+	}
+
+	assert.Nil(t, err)
+	assert.NotNil(t, resolvedParameters)
+	assert.True(t, reflect.DeepEqual(resolvedParameters, expectedResult))
 }
 
 func TestParseParametersFromTextIntoMapSecureAllowed(t *testing.T) {
-	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}."
+	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}, {{ ssm:/a/b/c/param1  }}."
 	expectedList := []string {"ssm:/a/b/c/param1", "ssm-secure:param2"}
 
-	list, err := parseParametersFromTextIntoMap(text, ResolveOptions{
-		ResolveSecureParameters: true,
-	})
+	list, err := parseParametersFromTextIntoMap(text)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
@@ -97,26 +106,30 @@ func TestParseParametersFromTextIntoMapSecureAllowed(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(list, expectedList))
 }
 
-func TestParseParametersFromTextIntoMapSecureNotAllowed(t *testing.T) {
-	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}...."
-
-	list, err := parseParametersFromTextIntoMap(text, ResolveOptions{
-		ResolveSecureParameters: false,
-	})
-
-	assert.NotNil(t, err)
-	assert.Nil(t, list)
-}
-
 func TestResolveParametersInText(t *testing.T) {
 	serviceObject := NewServiceMockedObject(false)
 
 	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}."
 	output, err := ResolveParametersInText(&serviceObject, text, ResolveOptions{
-		ResolveSecureParameters: true,
+		IgnoreSecureParameters: false,
 	})
 
 	expectedOutput := `Some text value_/a/b/c/param1, some more text value_param2.`
+
+	assert.Nil(t, err)
+	assert.NotNil(t, output)
+	assert.True(t, expectedOutput == output)
+}
+
+func TestResolveParametersInTextIgnoreSecureParams(t *testing.T) {
+	serviceObject := NewServiceMockedObject(false)
+
+	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}."
+	output, err := ResolveParametersInText(&serviceObject, text, ResolveOptions{
+		IgnoreSecureParameters: true,
+	})
+
+	expectedOutput := `Some text value_/a/b/c/param1, some more text {{ssm-secure:param2}}.`
 
 	assert.Nil(t, err)
 	assert.NotNil(t, output)

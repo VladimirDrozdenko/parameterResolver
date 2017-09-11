@@ -1,6 +1,6 @@
 {
   "param1" : "{{ ssm:/a/b/c/param1}}",
-  "secure-parameter-1" : "{{ssm-secure:param2}}",
+  "secure-parameter-1" : "{{ssm:param2}}",
   "duplicated-param1" : "{{ ssm:/a/b/c/param1}}",
   "duplicated-secure-parameter-1" : "{{ssm-secure:param2}}"
 }

@@ -25,7 +25,7 @@ var supportedEncodings = map[string]bool {
 
 
 type ResolveOptions struct {
-	ResolveSecureParameters bool
+	IgnoreSecureParameters bool
 	ValueEncoding string
 }
 
