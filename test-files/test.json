@@ -1,3 +1,6 @@
+/*  {{ssm:param2}} and {{ssm-secure:param2}} are both SecureString parameter but ssm:param2 marked as SSM by mistake */
+/*  if IgnoreSecureParameters == true, {{ssm:param2}} must not be resolved */
+/*  if IgnoreSecureParameters == false, the error should be thrown indicating that parameter is incorrectly marked as unsecure */
 {
   "param1" : "{{ ssm:/a/b/c/param1}}",
   "secure-parameter-1" : "{{ssm:param2}}",

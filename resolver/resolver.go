@@ -2,7 +2,6 @@ package resolver
 
 import (
 	"errors"
-	"log"
 	"strings"
 	"regexp"
 )
@@ -23,8 +22,12 @@ func ExtractParametersFromText(
 
 	parametersWithValues, err := getParametersFromSsmParameterStore(service, uniqueParameterReferences)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
+	}
+
+	prefixValidationError := validateParameterReferencePrefix(&parametersWithValues)
+	if prefixValidationError != nil {
+		return nil, prefixValidationError
 	}
 
 	if options.IgnoreSecureParameters {
@@ -34,6 +37,8 @@ func ExtractParametersFromText(
 			}
 		}
 	}
+
+	encodeResolvedValues(&parametersWithValues, options)
 
 	return parametersWithValues, nil
 }
@@ -50,8 +55,12 @@ func ResolveParameterReferenceList(
 	uniqueParameterReferences := dedupSlice(parameterReferences)
 	parametersWithValues, err := getParametersFromSsmParameterStore(service, uniqueParameterReferences)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
+	}
+
+	prefixValidationError := validateParameterReferencePrefix(&parametersWithValues)
+	if prefixValidationError != nil {
+		return nil, prefixValidationError
 	}
 
 	if options.IgnoreSecureParameters {
@@ -61,6 +70,8 @@ func ResolveParameterReferenceList(
 			}
 		}
 	}
+
+	encodeResolvedValues(&parametersWithValues, options)
 
 	return parametersWithValues, nil
 }
@@ -127,11 +138,35 @@ func ResolveParametersInFile(
 
 	err = writeToFile(unresolvedText, outputFileName)
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
 	return nil
+}
+
+func validateParameterReferencePrefix(resolvedParametersMap *map[string]SsmParameterInfo) error {
+	for key, value := range *resolvedParametersMap {
+		if  strings.HasPrefix(key, ssmSecurePrefix) && value.Type != secureStringType {
+			return errors.New("secure prefix " + ssmSecurePrefix + " is used for a non-secure type " + value.Type)
+		}
+
+		if strings.HasPrefix(key, ssmNonSecurePrefix) && value.Type == secureStringType {
+			return errors.New("non-secure prefix " + ssmNonSecurePrefix + " is used for a secure type " + value.Type)
+		}
+	}
+
+	return nil
+}
+
+func encodeResolvedValues(resolvedParametersMap *map[string]SsmParameterInfo, options ResolveOptions) {
+	formatEncoder := NewFormatEncoder(options.ValueEncoding)
+	for key, _ := range *resolvedParametersMap {
+		(*resolvedParametersMap)[key] = SsmParameterInfo{
+			Name: (*resolvedParametersMap)[key].Name,
+			Type: (*resolvedParametersMap)[key].Type,
+			Value: formatEncoder.encode((*resolvedParametersMap)[key].Value),
+		}
+	}
 }
 
 func dedupSlice(slice []string) []string {

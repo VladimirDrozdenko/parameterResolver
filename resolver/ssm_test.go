@@ -12,6 +12,7 @@ import (
 type ServiceMockedObject struct {
 	ISsmParameterService
 	generateUnresolved bool
+	records map[string]SsmParameterInfo
 }
 
 func NewServiceMockedObject(genUnresolved bool) ServiceMockedObject {
@@ -43,6 +44,36 @@ func (m *ServiceMockedObject) callGetParameters(parameterReferences []string) (m
 
 	return parameters, nil
 }
+
+
+type ServiceMockedObjectWithRecords struct {
+	ISsmParameterService
+	records map[string]SsmParameterInfo
+}
+
+func NewServiceMockedObjectWithExtraRecords(
+		records map[string]SsmParameterInfo) ServiceMockedObjectWithRecords {
+	return ServiceMockedObjectWithRecords {
+		records: records,
+	}
+}
+
+func (m *ServiceMockedObjectWithRecords) callGetParameters(parameterReferences []string) (map[string]SsmParameterInfo, error) {
+	parameters := make(map[string]SsmParameterInfo)
+
+	for i := 0; i < len(parameterReferences); i++ {
+
+		value, contains := m.records[parameterReferences[i]]
+		if !contains {
+			return nil, errors.New("error: " + parameterReferences[i] + " cannot be resolved")
+		}
+
+		parameters[parameterReferences[i]] = value
+	}
+
+	return parameters, nil
+}
+
 
 func TestGetParametersFromSsmParameterStoreWithAllResolvedNoPaging(t *testing.T) {
 	serviceObject := NewServiceMockedObject(false)
