@@ -6,45 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"errors"
-	"strings"
 )
-
-type ServiceMockedObject struct {
-	ISsmParameterService
-	generateUnresolved bool
-	records map[string]SsmParameterInfo
-}
-
-func NewServiceMockedObject(genUnresolved bool) ServiceMockedObject {
-	return ServiceMockedObject {
-		generateUnresolved: genUnresolved,
-	}
-}
-
-func (m *ServiceMockedObject) callGetParameters(parameterReferences []string) (map[string]SsmParameterInfo, error) {
-	parameters := make(map[string]SsmParameterInfo)
-
-	for i := 0; i < len(parameterReferences); i++ {
-		key := extractParameterNameFromReference(parameterReferences[i])
-
-		paramType := stringType
-		if strings.HasPrefix(parameterReferences[i], ssmSecurePrefix) {
-			paramType = secureStringType
-		}
-		parameters[parameterReferences[i]] = SsmParameterInfo {
-			Name: key,
-			Value: "value_" + key,
-			Type: paramType,
-		}
-	}
-
-	if m.generateUnresolved {
-		return nil, errors.New("error")
-	}
-
-	return parameters, nil
-}
-
 
 type ServiceMockedObjectWithRecords struct {
 	ISsmParameterService
@@ -76,8 +38,6 @@ func (m *ServiceMockedObjectWithRecords) callGetParameters(parameterReferences [
 
 
 func TestGetParametersFromSsmParameterStoreWithAllResolvedNoPaging(t *testing.T) {
-	serviceObject := NewServiceMockedObject(false)
-
 	parametersList := []string {}
 	expectedValues := map[string]SsmParameterInfo {}
 
@@ -93,6 +53,8 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedNoPaging(t *testing.T)
 		}
 	}
 
+	serviceObject := NewServiceMockedObjectWithExtraRecords(expectedValues)
+
 	t.Log("Testing getParametersFromSsmParameterStore API for all parameters present without paging...")
 	retrievedValues, err := getParametersFromSsmParameterStore(&serviceObject, parametersList)
 	assert.Nil(t, err)
@@ -101,8 +63,6 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedNoPaging(t *testing.T)
 
 
 func TestGetParametersFromSsmParameterStoreWithAllResolvedWithPaging(t *testing.T) {
-	serviceObject := NewServiceMockedObject(false)
-
 	parametersList := []string {}
 	expectedValues := map[string]SsmParameterInfo {}
 
@@ -118,6 +78,8 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedWithPaging(t *testing.
 		}
 	}
 
+	serviceObject := NewServiceMockedObjectWithExtraRecords(expectedValues)
+
 	t.Log("Testing getParametersFromSsmParameterStore API for all parameters present with paging...")
 	retrievedValues, err := getParametersFromSsmParameterStore(&serviceObject, parametersList)
 	assert.Nil(t, err)
@@ -126,13 +88,13 @@ func TestGetParametersFromSsmParameterStoreWithAllResolvedWithPaging(t *testing.
 
 
 func TestGetParametersFromSsmParameterStoreWithUnresolvedIgnoreNoPaging(t *testing.T) {
-	serviceObject := NewServiceMockedObject(true)
-
 	parametersList := []string {}
 	for i := 0; i < 2; i++ {
 		key := "{{ssm:name_" + strconv.Itoa(i) + "}}"
 		parametersList = append(parametersList, key)
 	}
+
+	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo{})
 
 	t.Log("Testing getParametersFromSsmParameterStore API for all unresolved parameters...")
 	_, err := getParametersFromSsmParameterStore(&serviceObject, parametersList)
