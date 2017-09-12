@@ -37,8 +37,6 @@ func ExtractParametersFromText(
 		}
 	}
 
-	encodeResolvedValues(&parametersWithValues, options)
-
 	return parametersWithValues, nil
 }
 
@@ -68,8 +66,6 @@ func ResolveParameterReferenceList(
 			}
 		}
 	}
-
-	encodeResolvedValues(&parametersWithValues, options)
 
 	return parametersWithValues, nil
 }
@@ -152,17 +148,6 @@ func validateParameterReferencePrefix(resolvedParametersMap *map[string]SsmParam
 	}
 
 	return nil
-}
-
-func encodeResolvedValues(resolvedParametersMap *map[string]SsmParameterInfo, options ResolveOptions) {
-	formatEncoder := NewFormatEncoder(options.ValueEncoding)
-	for key, _ := range *resolvedParametersMap {
-		(*resolvedParametersMap)[key] = SsmParameterInfo{
-			Name:  (*resolvedParametersMap)[key].Name,
-			Type:  (*resolvedParametersMap)[key].Type,
-			Value: formatEncoder.encode((*resolvedParametersMap)[key].Value),
-		}
-	}
 }
 
 func dedupSlice(slice []string) []string {
