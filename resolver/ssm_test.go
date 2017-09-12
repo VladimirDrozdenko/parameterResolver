@@ -2,10 +2,11 @@ package resolver
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type ServiceMockedObjectWithRecords struct {

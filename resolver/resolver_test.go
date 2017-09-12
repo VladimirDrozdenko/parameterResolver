@@ -1,10 +1,11 @@
 package resolver
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExtractParametersFromText(t *testing.T) {
