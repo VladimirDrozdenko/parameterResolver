@@ -135,11 +135,11 @@ func ResolveParametersInFile(
 func validateParameterReferencePrefix(resolvedParametersMap *map[string]SsmParameterInfo) error {
 	for key, value := range *resolvedParametersMap {
 		if strings.HasPrefix(key, ssmSecurePrefix) && value.Type != secureStringType {
-			return errors.New("secure prefix " + ssmSecurePrefix + " is used for a non-secure type " + value.Type)
+			return errors.New("for parameter reference {{" + key + "}} secure prefix " + ssmSecurePrefix + " is used for a non-secure type " + value.Type)
 		}
 
 		if strings.HasPrefix(key, ssmNonSecurePrefix) && value.Type == secureStringType {
-			return errors.New("non-secure prefix " + ssmNonSecurePrefix + " is used for a secure type " + value.Type)
+			return errors.New("for parameter reference {{" + key + "}} non-secure prefix " + ssmNonSecurePrefix + " is used for a secure type " + value.Type)
 		}
 	}
 
@@ -165,6 +165,7 @@ func dedupSlice(slice []string) []string {
 }
 
 func parseParametersFromTextIntoDedupedSlice(text string, ignoreSecureParameters bool) ([]string, error) {
+
 	matchedPhrases := parameterPlaceholder.FindAllStringSubmatch(text, -1)
 
 	parameterNamesDeduped := make(map[string]bool)
