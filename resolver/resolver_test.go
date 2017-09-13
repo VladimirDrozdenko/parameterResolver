@@ -91,8 +91,6 @@ func TestResolveParameterReferenceListIgnoreSecureParams(t *testing.T) {
 	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo{
 		"ssm:param1":             {Name: "param1", Type: stringType, Value: "value_param1"},
 		"ssm:param2":             {Name: "param2", Type: stringType, Value: "value_param2"},
-		"ssm-secure:/a/b/param1": {Name: "/a/b/param1", Type: secureStringType, Value: "value_/a/b/param1"},
-		"ssm-secure:param4":      {Name: "param4", Type: secureStringType, Value: "value_param4"},
 	})
 
 	parameterReferences := []string{
@@ -116,11 +114,25 @@ func TestResolveParameterReferenceListIgnoreSecureParams(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(resolvedParameters, expectedResult))
 }
 
-func TestParseParametersFromTextIntoMapSecureAllowed(t *testing.T) {
+func TestParseParametersFromTextIntoDedupedSliceSecureNotAllowed(t *testing.T) {
+	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}, {{ ssm-secure:/a/b/c/param1  }}."
+	expectedList := []string{"ssm:/a/b/c/param1"}
+
+	list, err := parseParametersFromTextIntoDedupedSlice(text, true)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+
+	sort.Slice(expectedList, func(i, j int) bool { return expectedList[i] < expectedList[j] })
+	sort.Slice(list, func(i, j int) bool { return list[i] < list[j] })
+	assert.True(t, reflect.DeepEqual(list, expectedList))
+}
+
+func TestParseParametersFromTextIntoDedupedSliceSecureAllowed(t *testing.T) {
 	text := "Some text {{ ssm:/a/b/c/param1}}, some more text {{ssm-secure:param2}}, {{ ssm-secure:/a/b/c/param1  }}."
 	expectedList := []string{"ssm:/a/b/c/param1", "ssm-secure:param2", "ssm-secure:/a/b/c/param1"}
 
-	list, err := parseParametersFromTextIntoMap(text)
+	list, err := parseParametersFromTextIntoDedupedSlice(text, false)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)

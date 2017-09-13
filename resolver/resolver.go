@@ -14,7 +14,7 @@ func ExtractParametersFromText(
 	input string,
 	options ResolveOptions) (map[string]SsmParameterInfo, error) {
 
-	uniqueParameterReferences, err := parseParametersFromTextIntoMap(input)
+	uniqueParameterReferences, err := parseParametersFromTextIntoDedupedSlice(input, options.IgnoreSecureParameters)
 	if err != nil {
 		return nil, err
 	}
@@ -27,14 +27,6 @@ func ExtractParametersFromText(
 	prefixValidationError := validateParameterReferencePrefix(&parametersWithValues)
 	if prefixValidationError != nil {
 		return nil, prefixValidationError
-	}
-
-	if options.IgnoreSecureParameters {
-		for key, value := range parametersWithValues {
-			if strings.HasPrefix(key, ssmSecurePrefix) || value.Type == secureStringType {
-				delete(parametersWithValues, key)
-			}
-		}
 	}
 
 	return parametersWithValues, nil
@@ -49,7 +41,19 @@ func ResolveParameterReferenceList(
 	options ResolveOptions) (map[string]SsmParameterInfo, error) {
 
 	uniqueParameterReferences := dedupSlice(parameterReferences)
-	parametersWithValues, err := getParametersFromSsmParameterStore(service, uniqueParameterReferences)
+
+	parameterReferencesToResolve := [] string{}
+	if options.IgnoreSecureParameters {
+		for _, ref := range uniqueParameterReferences {
+			if strings.HasPrefix(ref, ssmNonSecurePrefix) {
+				parameterReferencesToResolve = append(parameterReferencesToResolve, ref)
+			}
+		}
+	} else {
+		parameterReferencesToResolve = append(parameterReferencesToResolve, uniqueParameterReferences...)
+	}
+
+	parametersWithValues, err := getParametersFromSsmParameterStore(service, parameterReferencesToResolve)
 	if err != nil {
 		return nil, err
 	}
@@ -57,14 +61,6 @@ func ResolveParameterReferenceList(
 	prefixValidationError := validateParameterReferencePrefix(&parametersWithValues)
 	if prefixValidationError != nil {
 		return nil, prefixValidationError
-	}
-
-	if options.IgnoreSecureParameters {
-		for key, value := range parametersWithValues {
-			if strings.HasPrefix(key, ssmSecurePrefix) || value.Type == secureStringType {
-				delete(parametersWithValues, key)
-			}
-		}
 	}
 
 	return parametersWithValues, nil
@@ -168,21 +164,23 @@ func dedupSlice(slice []string) []string {
 	return keys
 }
 
-func parseParametersFromTextIntoMap(text string) ([]string, error) {
+func parseParametersFromTextIntoDedupedSlice(text string, ignoreSecureParameters bool) ([]string, error) {
 	matchedPhrases := parameterPlaceholder.FindAllStringSubmatch(text, -1)
-	matchedSecurePhrases := secureParameterPlaceholder.FindAllStringSubmatch(text, -1)
 
 	parameterNamesDeduped := make(map[string]bool)
 	for i := 0; i < len(matchedPhrases); i++ {
 		parameterNamesDeduped[matchedPhrases[i][1]] = true
 	}
 
-	for i := 0; i < len(matchedSecurePhrases); i++ {
-		parameterNamesDeduped[matchedSecurePhrases[i][1]] = true
+	if !ignoreSecureParameters {
+		matchedSecurePhrases := secureParameterPlaceholder.FindAllStringSubmatch(text, -1)
+		for i := 0; i < len(matchedSecurePhrases); i++ {
+			parameterNamesDeduped[matchedSecurePhrases[i][1]] = true
+		}
 	}
 
 	result := []string{}
-	for key, _ := range parameterNamesDeduped {
+	for key := range parameterNamesDeduped {
 		result = append(result, key)
 	}
 
