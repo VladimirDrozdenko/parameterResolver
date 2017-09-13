@@ -1,6 +1,3 @@
-
-/*  if IgnoreSecureParameters == true, {{ssm-secure:param2}} must not be resolved */
-/*  if IgnoreSecureParameters == false, the error should be thrown indicating that parameter is incorrectly marked as unsecure */
 {
   "param1" : "{{ ssm:/a/b/c/param1}}",
   "secure-parameter-1" : "{{ssm-secure:param2}}",

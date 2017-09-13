@@ -89,8 +89,8 @@ func TestResolveParameterReferenceList(t *testing.T) {
 
 func TestResolveParameterReferenceListIgnoreSecureParams(t *testing.T) {
 	serviceObject := NewServiceMockedObjectWithExtraRecords(map[string]SsmParameterInfo{
-		"ssm:param1":             {Name: "param1", Type: stringType, Value: "value_param1"},
-		"ssm:param2":             {Name: "param2", Type: stringType, Value: "value_param2"},
+		"ssm:param1": {Name: "param1", Type: stringType, Value: "value_param1"},
+		"ssm:param2": {Name: "param2", Type: stringType, Value: "value_param2"},
 	})
 
 	parameterReferences := []string{

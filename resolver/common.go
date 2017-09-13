@@ -13,7 +13,6 @@ const stringType = "String"
 var parameterPlaceholder = regexp.MustCompile("{{\\s*(" + ssmNonSecurePrefix + "[\\w-/]+)\\s*}}")
 var secureParameterPlaceholder = regexp.MustCompile("{{\\s*(" + ssmSecurePrefix + "[\\w-/]+)\\s*}}")
 
-
 type ResolveOptions struct {
 	IgnoreSecureParameters bool
 }

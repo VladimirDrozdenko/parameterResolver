@@ -42,7 +42,7 @@ func ResolveParameterReferenceList(
 
 	uniqueParameterReferences := dedupSlice(parameterReferences)
 
-	parameterReferencesToResolve := [] string{}
+	parameterReferencesToResolve := []string{}
 	if options.IgnoreSecureParameters {
 		for _, ref := range uniqueParameterReferences {
 			if strings.HasPrefix(ref, ssmNonSecurePrefix) {
