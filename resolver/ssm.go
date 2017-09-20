@@ -63,11 +63,11 @@ func NewService() (service *Service, err error) {
 // It returns a map<param-ref, SsmParameterInfo>.
 func (s *Service) callGetParameters(parameterReferences []string) (map[string]SsmParameterInfo, error) {
 
-	ref2NameMapper := make(map[string]string)
+	name2RefMap := make(map[string]string)
 
 	for i := 0; i < len(parameterReferences); i++ {
 		nameWithoutPrefix := extractParameterNameFromReference(parameterReferences[i])
-		ref2NameMapper[nameWithoutPrefix] = parameterReferences[i]
+		name2RefMap[nameWithoutPrefix] = parameterReferences[i]
 		parameterReferences[i] = nameWithoutPrefix
 	}
 
@@ -90,7 +90,7 @@ func (s *Service) callGetParameters(parameterReferences []string) (map[string]Ss
 	resolvedParametersMap := map[string]SsmParameterInfo{}
 	for i := 0; i < len(parametersOutput.Parameters); i++ {
 		param := parametersOutput.Parameters[i]
-		resolvedParametersMap[ref2NameMapper[*param.Name]] = SsmParameterInfo{
+		resolvedParametersMap[name2RefMap[*param.Name]] = SsmParameterInfo{
 			Name:  *param.Name,
 			Type:  *param.Type,
 			Value: *param.Value,
